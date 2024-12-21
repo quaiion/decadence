@@ -4,6 +4,7 @@ from statistics import mean
 from random import sample, randint
 import networkx as nx
 import matplotlib.pyplot as plt
+from typing import List, Tuple
 
 
 #########################
@@ -71,21 +72,21 @@ def graph_db_set_edge(graph: nx.Graph, word_1: str, word_2: str,
                       new_weight: float) -> None:
         graph[word_1][word_2]['weight'] = new_weight
 
-def graph_db_get_all_nbrs(graph: nx.Graph, word: str) -> list:
+def graph_db_get_all_nbrs(graph: nx.Graph, word: str) -> List:
         center = graph[word]
         item_list = []
         for nbr in center.items():
                 item_list.append([nbr[0], nbr[1]['weight']])
         return item_list
 
-def graph_db_get_all_words(graph: nx.Graph) -> list:
+def graph_db_get_all_words(graph: nx.Graph) -> List:
         return list(graph.nodes().keys())
 
 def sigm_dist(edge_weight: float) -> float:
         return 1.0 / (1 + exp(-1.0 * edge_weight))
 
 def build_subgraph_branch(graph: nx.Graph, center: str, subgraph: nx.Graph,
-                          heur_thresh: float, restrictions: list) -> None:
+                          heur_thresh: float, restrictions: List) -> None:
         for node, weight in graph_db_get_all_nbrs(graph, center):
                 dist = sigm_dist(weight)
                 if dist < heur_thresh:
@@ -105,7 +106,7 @@ def build_subgraph_branch(graph: nx.Graph, center: str, subgraph: nx.Graph,
                                                       heur_thresh, restrictions)
 
 def build_subgraph(graph: nx.Graph, word_1: str, word_2: str,
-                   restrictions: list) -> nx.Graph:
+                   restrictions: List) -> nx.Graph:
         subgraph = nx.Graph()
         subgraph.add_node(word_1)
         heur_thresh = (HEURISTIC_RATE *
@@ -115,19 +116,19 @@ def build_subgraph(graph: nx.Graph, word_1: str, word_2: str,
         return subgraph
 
 def res_dist(graph: nx.Graph, word_1: str, word_2: str,
-             restrictions: list = []) -> float:
+             restrictions: List = []) -> float:
         subgraph = build_subgraph(graph, word_1, word_2, restrictions)
         return nx.resistance_distance(subgraph, word_1, word_2)
 
-def mean_res_dist_dense(graph: nx.Graph, center: str, word_set: list) -> float:
+def mean_res_dist_dense(graph: nx.Graph, center: str, word_set: List) -> float:
         return mean([res_dist(graph, center, word, word_set)
                         for word in word_set])
         
-def mean_res_dist_rand(graph: nx.Graph, center: str, word_set: list) -> float:
+def mean_res_dist_rand(graph: nx.Graph, center: str, word_set: List) -> float:
         return mean([res_dist(graph, center, word)
                         for word in word_set])
 
-def enhance_humanity(graph: nx.Graph, center: str, word_set: list) -> None:
+def enhance_humanity(graph: nx.Graph, center: str, word_set: List) -> None:
         for word in word_set:
                 edge_weight = graph_db_get_edge(graph, center, word)
                 new_edge_weight = (edge_weight - WEIGHT_ELASTICITY
@@ -135,7 +136,7 @@ def enhance_humanity(graph: nx.Graph, center: str, word_set: list) -> None:
                                    else edge_weight)
                 graph_db_set_edge(graph, center, word, new_edge_weight)
 
-def enhance_machinery(graph: nx.Graph, center: str, word_set: list) -> None:
+def enhance_machinery(graph: nx.Graph, center: str, word_set: List) -> None:
         for word in word_set:
                 edge_weight = graph_db_get_edge(graph, center, word)
                 new_edge_weight = (edge_weight + WEIGHT_ELASTICITY
@@ -143,10 +144,10 @@ def enhance_machinery(graph: nx.Graph, center: str, word_set: list) -> None:
                                    else edge_weight)
                 graph_db_set_edge(graph, center, word, new_edge_weight)
 
-def make_verdict_dense(graph: nx.Graph, responce: str, word_set: list) -> bool:
+def make_verdict_dense(graph: nx.Graph, responce: str, word_set: List) -> bool:
         return bool(mean_res_dist_dense(graph, responce, word_set) < THRESH)
 
-def make_verdict_rand(graph: nx.Graph, responce: str, word_set: list) -> bool:
+def make_verdict_rand(graph: nx.Graph, responce: str, word_set: List) -> bool:
         return bool(mean_res_dist_rand(graph, responce, word_set) < THRESH)
 
 def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
@@ -168,7 +169,7 @@ def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         after_file.close()
         open('artifacts/to_be_decided.dat', 'w').close()
 
-def generate_word_set_dense(graph: nx.Graph) -> list:
+def generate_word_set_dense(graph: nx.Graph) -> List:
         all_words = graph_db_get_all_words(graph)
 
         sampled_idx = randint(0, len(all_words) - 1)
@@ -187,11 +188,11 @@ def generate_word_set_dense(graph: nx.Graph) -> list:
         
         return word_set
 
-def generate_word_set_rand(graph: nx.Graph) -> list:
+def generate_word_set_rand(graph: nx.Graph) -> List:
         all_words = graph_db_get_all_words(graph)
         return sample(all_words, min(WORD_SET_SIZE, graph.number_of_nodes()))
 
-def postpone_enhancement(resp: str, word_set: list) -> None:
+def postpone_enhancement(resp: str, word_set: List) -> None:
         after_file = open('artifacts/to_be_decided.dat', 'a')
         after_file.write('*' + resp + '\n')
         for word in word_set:
@@ -199,13 +200,13 @@ def postpone_enhancement(resp: str, word_set: list) -> None:
         after_file.write('-\n')
         after_file.close()
 
-def remember_word_set(word_set: list) -> None:
+def remember_word_set(word_set: List) -> None:
         word_file = open('artifacts/actual_word_set.dat', 'w')
         for word in word_set:
                 word_file.write(word + '\n')
         word_file.close()
 
-def retrieve_word_set() -> list:
+def retrieve_word_set() -> List:
         word_file = open('artifacts/actual_word_set.dat', 'r')
         word_set = []
         for line in word_file:
@@ -213,7 +214,7 @@ def retrieve_word_set() -> list:
         word_file.close()
         return word_set
 
-def check_iters() -> tuple:
+def check_iters() -> Tuple:
         batch_file = open('artifacts/batch.dat', 'r')
         for line in batch_file:
                 iter_strs = line.strip().split(' ')
@@ -240,7 +241,7 @@ def retrieve_verdict() -> bool:
         verd_file.close()
         return verdict
 
-def process_get(graph: nx.Graph) -> list:
+def process_get(graph: nx.Graph) -> List:
         batch_iter, desig_iter = check_iters()
 
         if batch_iter == desig_iter:
@@ -301,7 +302,7 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                 postpone_enhancement(post_text, word_set)
                 return 405
 
-def app(env, start_responce) -> list:
+def app(env, start_responce) -> List:
         request_method = env['REQUEST_METHOD']
 
         responce_body = ''
