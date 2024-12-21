@@ -25,13 +25,16 @@ status_to_msg = {
 # Hyperparameters #
 ###################
 
+PATTERN = 'single_assoc'
+assert PATTERN in ('single_assoc', 'single_rand'), 'pattern not supported'
+
 WEIGHT_ELASTICITY = 0.1
 WEIGHT_LIMIT = 5
 WORD_SET_SIZE = 5
 THRESH = 0.5
 DEFUALT_EDGE_WEIGHT = 0
 HEURISTIC_RATE = 8
-SAMPLING_RATE = 50
+ASSOC_SAMPLING_RATE = 50
 
 
 ###################
@@ -119,13 +122,13 @@ def res_dist(graph: nx.Graph, word_1: str, word_2: str,
         subgraph = build_subgraph(graph, word_1, word_2, restrictions)
         return nx.resistance_distance(subgraph, word_1, word_2)
 
-def mean_res_dist(graph: nx.Graph, center: str, word_set: list,
-                  restrict_inner_edges: bool) -> float:
-        return (mean([res_dist(graph, center, word, word_set)
-                      for word in word_set])
-                if restrict_inner_edges
-                else mean([res_dist(graph, center, word)
-                           for word in word_set]))
+def mean_res_dist(graph: nx.Graph, center: str, word_set: list) -> float:
+        if PATTERN == 'single_assoc':
+                return mean([res_dist(graph, center, word, word_set)
+                             for word in word_set])
+        else: # PATTERN == 'single_rand'
+                return mean([res_dist(graph, center, word)
+                             for word in word_set])
 
 def enhance_humanity(graph: nx.Graph, center: str, word_set: list) -> None:
         for word in word_set:
@@ -144,7 +147,7 @@ def enhance_machinery(graph: nx.Graph, center: str, word_set: list) -> None:
                 graph_db_set_edge(graph, center, word, new_edge_weight)
 
 def make_verdict(graph: nx.Graph, responce: str, word_set: list) -> bool:
-        return bool(mean_res_dist(graph, responce, word_set, True) < THRESH)
+        return bool(mean_res_dist(graph, responce, word_set) < THRESH)
 
 def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         center = ''
@@ -165,7 +168,7 @@ def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         after_file.close()
         open('to_be_decided.dat', 'w').close()
 
-def generate_word_set(graph: nx.Graph) -> list:
+def generate_word_set_assoc(graph: nx.Graph) -> list:
         all_words = graph_db_get_all_words(graph)
 
         sampled_idx = randint(0, len(all_words) - 1)
@@ -174,14 +177,25 @@ def generate_word_set(graph: nx.Graph) -> list:
 
         for i in range(min(WORD_SET_SIZE, graph.number_of_nodes()) - 1):
                 word_sample_set = sample(all_words,
-                                         min(SAMPLING_RATE, len(all_words)))
-                res_dists = [mean_res_dist(graph, word, word_set, True)
+                                         min(ASSOC_SAMPLING_RATE,
+                                             len(all_words)))
+                res_dists = [mean_res_dist(graph, word, word_set)
                              for word in word_sample_set]
                 best_idx = res_dists.index(max(res_dists))
                 word_set.append(word_sample_set[best_idx])
                 all_words.remove(word_sample_set[best_idx])
         
         return word_set
+
+def generate_word_set_rand(graph: nx.Graph) -> list:
+        all_words = graph_db_get_all_words(graph)
+        return sample(all_words, min(WORD_SET_SIZE, graph.number_of_nodes()))
+
+def generate_word_set(graph: nx.Graph) -> list:
+        if PATTERN == 'single_assoc':
+                return generate_word_set_assoc(graph)
+        else: # PATTERN == 'single_rand'
+                return generate_word_set_rand(graph)
 
 def postpone_enhancement(resp: str, word_set: list) -> None:
         after_file = open('to_be_decided.dat', 'a')
