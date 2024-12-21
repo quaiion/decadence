@@ -293,6 +293,7 @@ def app(env, start_responce) -> list:
 
 await_state = 'await_get'
 learn_state = 'test'
+busy = False
 
 GRAPH = graph_db_import()
 
@@ -308,6 +309,7 @@ while True:
                         continue
                 print('\n        ' + ', '.join(process_get(GRAPH)))
                 await_state = 'await_post'
+                busy = True
 
         elif inp.strip().split(' ')[0] == 'post':
                 if await_state != 'await_post':
@@ -339,6 +341,8 @@ while True:
                         print('\n        ' + msg)
 
                 await_state = 'await_get'
+                if msg in ('[ Fail ]', '[ Pass ]'):
+                        busy = False
 
         elif inp == 'quit':
                 graph_db_save(GRAPH)
@@ -365,9 +369,14 @@ while True:
                 graph_db_save(GRAPH)
 
         elif inp.strip().split(' ')[0] == 'insert':
+                if busy:
+                        print('\n        database update in progress, denied.')
+                        continue
+
                 if len(inp.strip().split(' ')) < 2:
                         print('\n        at least one word should be inserted.')
                         continue
+
                 for word in inp.strip().split(' ')[1:]:
                         if word.strip() == '':
                                 continue
@@ -383,9 +392,14 @@ while True:
                                       'the database.')
 
         elif inp.strip().split(' ')[0] == 'remove':
+                if busy:
+                        print('\n        database update in progress, denied.')
+                        continue
+
                 if len(inp.strip().split(' ')) < 2:
                         print('\n        at least one word should be removed.')
                         continue
+
                 for word in inp.strip().split(' ')[1:]:
                         if word.strip() == '':
                                 continue
