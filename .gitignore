@@ -1,4 +1,3 @@
-*.png
-actual_word_set.dat
-verdict.dat
-to_be_decided.dat
+artifacts/actual_word_set.dat
+artifacts/verdict.dat
+artifacts/to_be_decided.dat
