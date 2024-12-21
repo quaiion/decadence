@@ -227,12 +227,12 @@ def set_iters(batch_iter: int, desig_iter: int) -> None:
         batch_file.write(str(batch_iter) + ' ' + str(desig_iter) + '\n')
         batch_file.close()
 
-def remember_verdict(verdict: bool):
+def remember_verdict(verdict: bool) -> None:
         verd_file = open('verdict.dat', 'w')
         verd_file.write(str(verdict) + '\n')
         verd_file.close()
 
-def retrieve_verdict(verdict: bool):
+def retrieve_verdict() -> bool:
         verd_file = open('verdict.dat', 'r')
         for line in verd_file:
                 verdict = bool(line.strip())
