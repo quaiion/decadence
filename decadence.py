@@ -302,6 +302,7 @@ while True:
         assert learn_state in ('learn', 'test'), 'learn/test state fault'
 
         inp = input('\n   > ')
+        split_inp = inp.strip().split(' ')
 
         if inp == 'get':
                 if await_state != 'await_get':
@@ -311,22 +312,22 @@ while True:
                 await_state = 'await_post'
                 busy = True
 
-        elif inp.strip().split(' ')[0] == 'post':
+        elif split_inp[0] == 'post':
                 if await_state != 'await_post':
                         print('\n        request a question, please.')
                         continue
 
                 if learn_state == 'learn':
-                        if inp.strip().split(' ')[1] == 'mac':
+                        if split_inp[1] == 'mac':
                                 sts = process_post(GRAPH,
-                                                   inp.strip().split(' ')[2],
+                                                   split_inp[2],
                                                    'mac')
                                 assert sts in status_to_msg.keys(), 'wrong status'
                                 msg = status_to_msg[sts]
                                 print('\n        ' + msg)
-                        elif inp.strip().split(' ')[1] == 'hum':
+                        elif split_inp[1] == 'hum':
                                 sts = process_post(GRAPH,
-                                                   inp.strip().split(' ')[2],
+                                                   split_inp[2],
                                                    'hum')
                                 assert sts in status_to_msg.keys(), 'wrong status'
                                 msg = status_to_msg[sts]
@@ -335,7 +336,7 @@ while True:
                                 print('\n        ...')
                                 continue
                 else: # learn_state == 'test'
-                        sts = process_post(GRAPH, inp)
+                        sts = process_post(GRAPH, split_inp[1])
                         assert sts in status_to_msg.keys(), 'wrong status'
                         msg = status_to_msg[sts]
                         print('\n        ' + msg)
@@ -354,30 +355,31 @@ while True:
                 print('\n        switched to learn mode.')
                 learn_state = 'learn'
         elif inp == 'print':
-                print('\n        .png graph saved in the current dir.')
                 fig, ax = plt.subplots(figsize=(12, 12), dpi=600)
                 dot_graph = nx.draw_networkx(GRAPH, node_size=0.2,
                                              with_labels=True, width=0.05,
                                              font_size=4, ax=ax,
                                              font_family='monospace',
-                                             node_color='#ff0000')
+                                             node_color='#ff0000',
+                                             alpha=0.5)
                 fig.savefig('graph.png', format='png')
+                print('\n        .png graph saved in the current dir.')
         elif inp == 'stat':
                 print('\n        %d nodes available.' % GRAPH.number_of_nodes())
         elif inp == 'save':
-                print('\n        database state commited to graph.gml file.')
                 graph_db_save(GRAPH)
+                print('\n        database state commited to graph.gml file.')
 
-        elif inp.strip().split(' ')[0] == 'insert':
+        elif split_inp[0] == 'insert':
                 if busy:
                         print('\n        database update in progress, denied.')
                         continue
 
-                if len(inp.strip().split(' ')) < 2:
+                if len(split_inp) < 2:
                         print('\n        at least one word should be inserted.')
                         continue
 
-                for word in inp.strip().split(' ')[1:]:
+                for word in split_inp[1:]:
                         if word.strip() == '':
                                 continue
                         if not bool(fullmatch(r'[a-z]+', word)):
@@ -391,16 +393,16 @@ while True:
                                 print('\n        "%s" added to ' % word +
                                       'the database.')
 
-        elif inp.strip().split(' ')[0] == 'remove':
+        elif split_inp[0] == 'remove':
                 if busy:
                         print('\n        database update in progress, denied.')
                         continue
 
-                if len(inp.strip().split(' ')) < 2:
+                if len(split_inp) < 2:
                         print('\n        at least one word should be removed.')
                         continue
 
-                for word in inp.strip().split(' ')[1:]:
+                for word in split_inp[1:]:
                         if word.strip() == '':
                                 continue
                         if not bool(fullmatch(r'[a-z]+', word)):
