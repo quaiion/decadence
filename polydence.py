@@ -243,11 +243,6 @@ def retrieve_verdict(verdict: bool):
 def process_get(graph: nx.Graph) -> list:
         batch_iter, desig_iter = check_iters()
 
-        if batch_iter == 3: # time to cycle up
-                batch_iter = 0
-                desig_iter = randint(0, 2)
-                set_iters(batch_iter, desig_iter)
-
         if batch_iter == desig_iter:
                 word_set = generate_word_set_assoc(graph)
         else:
@@ -275,7 +270,6 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                 return 405
         
         batch_iter, desig_iter = check_iters()
-        set_iters(batch_iter + 1, desig_iter)
 
         if batch_iter == desig_iter:
                 if mode is not None:
@@ -291,6 +285,8 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                                                             word_set))
 
         if batch_iter == 2: # last iteration of 3
+                set_iters(0, randint(0, 2)) # time to cycle up
+
                 verdict = retrieve_verdict()
                 make_postponed_enhancements(graph, verdict)
                 if verdict == True:
@@ -300,6 +296,8 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                         enhance_machinery(graph, post_text, word_set)
                         return 407
         else:
+                set_iters(batch_iter + 1, desig_iter)
+
                 postpone_enhancement(post_text, word_set)
                 return 405
 
