@@ -31,7 +31,7 @@ WORD_SET_SIZE = 5
 THRESH = 0.5
 DEFUALT_EDGE_WEIGHT = 0
 HEURISTIC_RATE = 8
-ASSOC_SAMPLING_RATE = 50
+DENSE_SAMPLING_RATE = 50
 
 
 ###################
@@ -119,7 +119,7 @@ def res_dist(graph: nx.Graph, word_1: str, word_2: str,
         subgraph = build_subgraph(graph, word_1, word_2, restrictions)
         return nx.resistance_distance(subgraph, word_1, word_2)
 
-def mean_res_dist_assoc(graph: nx.Graph, center: str, word_set: list) -> float:
+def mean_res_dist_dense(graph: nx.Graph, center: str, word_set: list) -> float:
         return mean([res_dist(graph, center, word, word_set)
                         for word in word_set])
         
@@ -143,8 +143,8 @@ def enhance_machinery(graph: nx.Graph, center: str, word_set: list) -> None:
                                    else edge_weight)
                 graph_db_set_edge(graph, center, word, new_edge_weight)
 
-def make_verdict_assoc(graph: nx.Graph, responce: str, word_set: list) -> bool:
-        return bool(mean_res_dist_assoc(graph, responce, word_set) < THRESH)
+def make_verdict_dense(graph: nx.Graph, responce: str, word_set: list) -> bool:
+        return bool(mean_res_dist_dense(graph, responce, word_set) < THRESH)
 
 def make_verdict_rand(graph: nx.Graph, responce: str, word_set: list) -> bool:
         return bool(mean_res_dist_rand(graph, responce, word_set) < THRESH)
@@ -168,7 +168,7 @@ def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         after_file.close()
         open('../artifacts/to_be_decided.dat', 'w').close()
 
-def generate_word_set_assoc(graph: nx.Graph) -> list:
+def generate_word_set_dense(graph: nx.Graph) -> list:
         all_words = graph_db_get_all_words(graph)
 
         sampled_idx = randint(0, len(all_words) - 1)
@@ -177,9 +177,9 @@ def generate_word_set_assoc(graph: nx.Graph) -> list:
 
         for i in range(min(WORD_SET_SIZE, graph.number_of_nodes()) - 1):
                 word_sample_set = sample(all_words,
-                                         min(ASSOC_SAMPLING_RATE,
+                                         min(DENSE_SAMPLING_RATE,
                                              len(all_words)))
-                res_dists = [mean_res_dist_assoc(graph, word, word_set)
+                res_dists = [mean_res_dist_dense(graph, word, word_set)
                              for word in word_sample_set]
                 best_idx = res_dists.index(max(res_dists))
                 word_set.append(word_sample_set[best_idx])
@@ -244,7 +244,7 @@ def process_get(graph: nx.Graph) -> list:
         batch_iter, desig_iter = check_iters()
 
         if batch_iter == desig_iter:
-                word_set = generate_word_set_assoc(graph)
+                word_set = generate_word_set_dense(graph)
         else:
                 word_set = generate_word_set_rand(graph)
 
@@ -281,7 +281,7 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                                 remember_verdict(False)
 
                 else:
-                        remember_verdict(make_verdict_assoc(graph, post_text,
+                        remember_verdict(make_verdict_dense(graph, post_text,
                                                             word_set))
 
         if batch_iter == 2: # last iteration of 3

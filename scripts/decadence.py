@@ -25,8 +25,8 @@ status_to_msg = {
 # Hyperparameters #
 ###################
 
-PATTERN = 'single_assoc'
-assert PATTERN in ('single_assoc', 'single_rand'), 'pattern not supported'
+PATTERN = 'single_dense'
+assert PATTERN in ('single_dense', 'single_rand'), 'pattern not supported'
 
 WEIGHT_ELASTICITY = 0.1
 WEIGHT_LIMIT = 5
@@ -34,7 +34,7 @@ WORD_SET_SIZE = 5
 THRESH = 0.5
 DEFUALT_EDGE_WEIGHT = 0
 HEURISTIC_RATE = 8
-ASSOC_SAMPLING_RATE = 50
+DENSE_SAMPLING_RATE = 50
 
 
 ###################
@@ -123,7 +123,7 @@ def res_dist(graph: nx.Graph, word_1: str, word_2: str,
         return nx.resistance_distance(subgraph, word_1, word_2)
 
 def mean_res_dist(graph: nx.Graph, center: str, word_set: list) -> float:
-        if PATTERN == 'single_assoc':
+        if PATTERN == 'single_dense':
                 return mean([res_dist(graph, center, word, word_set)
                              for word in word_set])
         else: # PATTERN == 'single_rand'
@@ -168,7 +168,7 @@ def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         after_file.close()
         open('../artifacts/to_be_decided.dat', 'w').close()
 
-def generate_word_set_assoc(graph: nx.Graph) -> list:
+def generate_word_set_dense(graph: nx.Graph) -> list:
         all_words = graph_db_get_all_words(graph)
 
         sampled_idx = randint(0, len(all_words) - 1)
@@ -177,7 +177,7 @@ def generate_word_set_assoc(graph: nx.Graph) -> list:
 
         for i in range(min(WORD_SET_SIZE, graph.number_of_nodes()) - 1):
                 word_sample_set = sample(all_words,
-                                         min(ASSOC_SAMPLING_RATE,
+                                         min(DENSE_SAMPLING_RATE,
                                              len(all_words)))
                 res_dists = [mean_res_dist(graph, word, word_set)
                              for word in word_sample_set]
@@ -192,8 +192,8 @@ def generate_word_set_rand(graph: nx.Graph) -> list:
         return sample(all_words, min(WORD_SET_SIZE, graph.number_of_nodes()))
 
 def generate_word_set(graph: nx.Graph) -> list:
-        if PATTERN == 'single_assoc':
-                return generate_word_set_assoc(graph)
+        if PATTERN == 'single_dense':
+                return generate_word_set_dense(graph)
         else: # PATTERN == 'single_rand'
                 return generate_word_set_rand(graph)
 
