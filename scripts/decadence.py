@@ -42,10 +42,10 @@ DENSE_SAMPLING_RATE = 50
 ###################
 
 def graph_db_import() -> nx.Graph:
-        return nx.read_gml('../database/graph.gml')
+        return nx.read_gml('database/graph.gml')
 
 def graph_db_save(graph: nx.Graph) -> None:
-        nx.write_gml(graph, '../database/graph.gml')
+        nx.write_gml(graph, 'database/graph.gml')
 
 def create_default_edges(graph: nx.Graph, word: str) -> None:
         for node in graph.nodes().keys():
@@ -152,7 +152,7 @@ def make_verdict(graph: nx.Graph, responce: str, word_set: list) -> bool:
 def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
         center = ''
         word_set = []
-        after_file = open('../artifacts/to_be_decided.dat', 'r')
+        after_file = open('artifacts/to_be_decided.dat', 'r')
         for line in after_file:
                 word = line.strip()
                 if word[0] == '*':
@@ -166,7 +166,7 @@ def make_postponed_enhancements(graph: nx.Graph, human: bool) -> None:
                 else:
                         word_set.append(word)
         after_file.close()
-        open('../artifacts/to_be_decided.dat', 'w').close()
+        open('artifacts/to_be_decided.dat', 'w').close()
 
 def generate_word_set_dense(graph: nx.Graph) -> list:
         all_words = graph_db_get_all_words(graph)
@@ -198,7 +198,7 @@ def generate_word_set(graph: nx.Graph) -> list:
                 return generate_word_set_rand(graph)
 
 def postpone_enhancement(resp: str, word_set: list) -> None:
-        after_file = open('../artifacts/to_be_decided.dat', 'a')
+        after_file = open('artifacts/to_be_decided.dat', 'a')
         after_file.write('*' + resp + '\n')
         for word in word_set:
                 after_file.write(word + '\n')
@@ -206,13 +206,13 @@ def postpone_enhancement(resp: str, word_set: list) -> None:
         after_file.close()
 
 def remember_word_set(word_set: list) -> None:
-        word_file = open('../artifacts/actual_word_set.dat', 'w')
+        word_file = open('artifacts/actual_word_set.dat', 'w')
         for word in word_set:
                 word_file.write(word + '\n')
         word_file.close()
 
 def retrieve_word_set() -> list:
-        word_file = open('../artifacts/actual_word_set.dat', 'r')
+        word_file = open('artifacts/actual_word_set.dat', 'r')
         word_set = []
         for line in word_file:
                 word_set.append(line.strip())
