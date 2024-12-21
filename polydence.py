@@ -39,10 +39,10 @@ ASSOC_SAMPLING_RATE = 50
 ###################
 
 def graph_db_import() -> nx.Graph:
-        return nx.read_gml('graph.gml')
+        return nx.read_gml('ensemble_graph.gml')
 
 def graph_db_save(graph: nx.Graph) -> None:
-        nx.write_gml(graph, 'graph.gml')
+        nx.write_gml(graph, 'ensemble_graph.gml')
 
 def create_default_edges(graph: nx.Graph, word: str) -> None:
         for node in graph.nodes().keys():
