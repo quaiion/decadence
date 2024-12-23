@@ -263,30 +263,6 @@ def process_post(graph: nx.Graph, post_text: str, mode: str = None) -> int:
                 make_postponed_enhancements(graph, False)
                 return 407
 
-def app(env, start_responce) -> List:
-        request_method = env['REQUEST_METHOD']
-
-        responce_body = ''
-        status = 408
-
-        if request_method == 'GET':
-                graph = graph_db_import()
-                responce_body = process_get(graph)
-        elif request_method == 'POST':
-                graph = graph_db_import()
-                content_length = int(env.get('CONTENT_LENGTH', 0))
-                post_data = env['wsgi.input'].read(content_length)
-                status = process_post(graph, post_data.decode('utf-8'))
-                graph_db_save(graph)
-        else:
-                # please change the exception to whatever you like
-                raise NameError('request method unsupported')
-
-        responce_headers = [('Content-Type', 'text/plain')]
-        start_responce(status, responce_headers)
-
-        return responce_body
-
 
 #########################
 # CLI interface section #
